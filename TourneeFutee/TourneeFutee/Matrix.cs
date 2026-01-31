@@ -5,7 +5,7 @@
         private int nbRows;
         private int nbColumns;
         private float defaultValue;
-        private List<List<float>> listeS;
+        private float[][] tabS;
 
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
@@ -23,15 +23,16 @@
             }
             else
             {
+                this.nbRows = nbRows;
                 this.nbColumns = nbColumns;
                 this.defaultValue = defaultValue;
             }
-            this.listeS = new List<List<float>>();
+            this.tabS = new tab[nbRows][];
             for (int i = 0; i < nbRows; i++) 
             {
                 for (int j = 0; j < nbColumns; j++) 
                 {
-                    listeS[i][j]=defaultValue;
+                    tabS[i][j] = defaultValue;
                 }
             }
         }
@@ -59,7 +60,7 @@
             get; // TODO : implémenter
                  // pas de set
         }
-        public List<List<float>> ListeS { get; set; }
+        public float[][] tabS { get; set; }
 
         /* Insère une ligne à l'indice `i`. Décale les lignes suivantes vers le bas.
          * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
@@ -68,7 +69,31 @@
          */
         public void AddRow(int i)
         {
-            // TODO : implémenter
+            if (i < 0 || i > nbRows)
+            {
+                throw new ArgumentException();
+            }
+            else 
+            {
+                listeS.Add(new List<float>(nbColums));
+                for (int j = i; j < nbRows + 1; j++)
+                {
+                    List<float> liste = listeS[j];
+                    listeS[j] = listeS[i]
+
+
+                }
+                    for (int j = i; j < nbRows + 1; j++) 
+                {
+                    for (int k = 0; k < nbColumns; k++) 
+                    {
+                        if (j == i) 
+                        {
+                            listeS.Add(new List<float>());
+                        }
+                    }
+                }
+            }
         }
 
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
