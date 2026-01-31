@@ -2,6 +2,12 @@
 {
     public class Matrix
     {
+        private int nbRows;
+        private int nbColumns;
+        private float defaultValue;
+        private List<List<float>> listeS;
+
+
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
 
@@ -11,7 +17,23 @@
          */
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
-            // TODO : implémenter
+            if (nbRows < 0 || nbColumns < 0)
+            {
+                throw new ArgumentException();
+            }
+            else
+            {
+                this.nbColumns = nbColumns;
+                this.defaultValue = defaultValue;
+            }
+            this.listeS = new List<List<float>>();
+            for (int i = 0; i < nbRows; i++) 
+            {
+                for (int j = 0; j < nbColumns; j++) 
+                {
+                    listeS[i][j]=defaultValue;
+                }
+            }
         }
 
         // Propriété : valeur par défaut utilisée pour remplir les nouvelles cases
@@ -37,6 +59,7 @@
             get; // TODO : implémenter
                  // pas de set
         }
+        public List<List<float>> ListeS { get; set; }
 
         /* Insère une ligne à l'indice `i`. Décale les lignes suivantes vers le bas.
          * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
