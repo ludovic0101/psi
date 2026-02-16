@@ -8,6 +8,7 @@
         private float[][] tabS;
 
         // Testcommit
+        //Test Commit chaima 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
 
@@ -85,6 +86,7 @@
                 {
                     newtabS[i][k] = defaultValue;
                 }
+<<<<<<< Updated upstream
                 for (int j = i; j < nbRows; j++)
                 {
                     newtabS[j + 1] = tabS[j];
@@ -92,6 +94,10 @@
                 tabS = newtabS;
                 nbRows++;
             }   
+=======
+            }
+
+>>>>>>> Stashed changes
         }
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
          * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
