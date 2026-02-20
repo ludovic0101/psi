@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static System.Collections.Specialized.BitVector32;
 
 namespace TourneeFutee
 {
@@ -21,7 +22,7 @@ namespace TourneeFutee
         // Convention : adj[i][j] = poids si arc i->j existe, sinon _noEdgeValue
         private Matrix _adj;
 
-        // ------------------------------ Construction ------------------------------
+        
 
         // Construit un graphe (`directed`=true => orienté)
         // La valeur `noEdgeValue` est le poids modélisant l'absence d'un arc (0 par défaut)
@@ -34,7 +35,6 @@ namespace TourneeFutee
             _adj = new Matrix(nbRows: 0, nbColumns: 0, defaultValue: _noEdgeValue);
         }
 
-        // ------------------------------ Propriétés ------------------------------
 
         // Propriété : ordre du graphe
         public int Order
@@ -54,7 +54,7 @@ namespace TourneeFutee
             get { return _noEdgeValue; }
         }
 
-        // ------------------------------ Utilitaires internes ------------------------------
+       
 
         private int IndexOfVertex(string name)
         {
@@ -94,7 +94,7 @@ namespace TourneeFutee
             _adj.RemoveColumn(k);
         }
 
-        // ------------------------------ Gestion des sommets ------------------------------
+        
 
         // Ajoute le sommet de nom `name` et de valeur `value` (0 par défaut) dans le graphe
         // Lève une ArgumentException s'il existe déjà un sommet avec le même nom dans le graphe
@@ -167,7 +167,7 @@ namespace TourneeFutee
             return neighborNames;
         }
 
-        // ------------------------------ Gestion des arcs ------------------------------
+        
 
         public void AddEdge(string sourceName, string destinationName, float weight = 1)
         {
@@ -192,14 +192,18 @@ namespace TourneeFutee
 
         public void RemoveEdge(string sourceName, string destinationName)
         {
-            int i = IndexOfVertex(sourceName);
+            // Récupération des indices correspondant aux noms des sommets
+            int i = IndexOfVertex(sourceName); 
             int j = IndexOfVertex(destinationName);
 
+            // Vérification de l'existence de la relation avant suppression
             if (!EdgeExistsByIndex(i, j))
                 throw new ArgumentException($"Arc introuvable : '{sourceName}' -> '{destinationName}'.");
 
+            // Suppression de l'arc dans la matrice d'adjacence
             _adj.SetValue(i, j, _noEdgeValue);
 
+          
             if (!_directed)
             {
                 // En non orienté, on retire aussi l'inverse
@@ -215,7 +219,7 @@ namespace TourneeFutee
             if (!EdgeExistsByIndex(i, j))
                 throw new ArgumentException($"Arc introuvable : '{sourceName}' -> '{destinationName}'.");
 
-            return _adj.GetValue(i, j);
+            return _adj.GetValue(i, j); 
         }
 
         public void SetEdgeWeight(string sourceName, string destinationName, float weight)
@@ -228,7 +232,7 @@ namespace TourneeFutee
 
             if (!_directed)
             {
-                _adj.SetValue(j, i, weight);
+                _adj.SetValue(j, i, weight); 
             }
         }
 
