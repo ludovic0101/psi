@@ -241,7 +241,24 @@
 
 
 
-        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
+        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes
+        // ===================== AJOUT POUR LITTLE =====================
+
+        // Copie profonde de la matrice
+        public Matrix Clone()
+        {
+            Matrix copy = new Matrix(nbRows, nbColumns, defaultValue);
+
+            for (int i = 0; i < nbRows; i++)
+            {
+                for (int j = 0; j < nbColumns; j++)
+                {
+                    copy.SetValue(i, j, tabS[i][j]);
+                }
+            }
+
+            return copy;
+        }
 
     }
 }

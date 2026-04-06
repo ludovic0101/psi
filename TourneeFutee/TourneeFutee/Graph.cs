@@ -257,5 +257,58 @@ namespace TourneeFutee
             Console.WriteLine($"Adjacency matrix (Order={Order}, Directed={Directed}, NoEdgeValue={_noEdgeValue})");
             _adj.Print();
         }
+        // ===================== AJOUTS POUR LITTLE =====================
+
+        // Renvoie la liste des sommets (déjà existant mais utile en accès direct)
+        public List<string> Vertices
+        {
+            get { return new List<string>(_vertexNames); }
+        }
+
+        // Renvoie le nom du sommet à l'indice i
+        public string GetVertexName(int i)
+        {
+            if (i < 0 || i >= _vertexNames.Count)
+                throw new ArgumentOutOfRangeException(nameof(i));
+
+            return _vertexNames[i];
+        }
+
+        // Renvoie l'indice d'un sommet
+        public int GetVertexIndex(string name)
+        {
+            return IndexOfVertex(name);
+        }
+
+        public float GetCost(string sourceName, string destinationName)
+        {
+            return GetEdgeWeight(sourceName, destinationName);
+        }
+        // Construit une matrice de coûts à partir du graphe
+        public Matrix ToCostMatrix()
+        {
+            int n = Order;
+            Matrix m = new Matrix(n, n);
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (i == j)
+                    {
+                        m.SetValue(i, j, float.PositiveInfinity);
+                    }
+                    else
+                    {
+                        if (_adj.GetValue(i, j) == _noEdgeValue)
+                            m.SetValue(i, j, float.PositiveInfinity);
+                        else
+                            m.SetValue(i, j, _adj.GetValue(i, j));
+                    }
+                }
+            }
+
+            return m;
+        }
     }
 }

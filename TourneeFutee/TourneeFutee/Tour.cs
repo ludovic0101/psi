@@ -1,39 +1,66 @@
 ﻿namespace TourneeFutee
 {
-    // Modélise une tournée dans le cadre du problème du voyageur de commerce
     public class Tour
     {
-        // TODO : ajouter tous les attributs que vous jugerez pertinents 
+        // ===================== ATTRIBUTS =====================
 
-        // propriétés
+        private List<(string source, string destination)> segments;
+        private float cost;
 
-        // Coût total de la tournée
+        // ===================== CONSTRUCTEUR =====================
+
+        public Tour()
+        {
+            segments = new List<(string, string)>();
+            cost = 0;
+        }
+
+        // ===================== PROPRIÉTÉS =====================
+
         public float Cost
         {
-            get;    // TODO : implémenter
+            get { return cost; }
         }
 
-        // Nombre de trajets dans la tournée
         public int NbSegments
         {
-            get;    // TODO : implémenter
+            get { return segments.Count; }
         }
 
+        // ===================== MÉTHODES =====================
 
-        // Renvoie vrai si la tournée contient le trajet `source`->`destination`
         public bool ContainsSegment((string source, string destination) segment)
         {
-            return false;   // TODO : implémenter 
+            return segments.Contains(segment);
         }
 
-
-        // Affiche les informations sur la tournée : coût total et trajets
         public void Print()
         {
-            // TODO : implémenter 
+            Console.WriteLine($"Coût total : {cost}");
+            Console.WriteLine("Segments :");
+
+            foreach (var s in segments)
+            {
+                Console.WriteLine($"{s.source} -> {s.destination}");
+            }
         }
 
-        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
+        // ===================== MÉTHODES UTILES =====================
 
+        public void AddSegment(string source, string destination, float weight)
+        {
+            segments.Add((source, destination));
+            cost += weight;
+        }
+
+        public void SetCost(float cost)
+        {
+            this.cost = cost;
+        }
+
+        public List<(string source, string destination)> GetSegments()
+        {
+            return new List<(string, string)>(segments);
+        }
     }
 }
