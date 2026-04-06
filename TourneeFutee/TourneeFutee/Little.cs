@@ -5,7 +5,7 @@
         private Graph graph;
         private int nbCities;
 
-        // Stockage du meilleur résultat
+        // Conservés pour rester proches de ta structure
         private float bestCost;
         private Tour bestTour;
 
@@ -13,121 +13,146 @@
         {
             this.graph = graph;
             this.nbCities = graph.Order;
-
             this.bestCost = float.PositiveInfinity;
             this.bestTour = null;
         }
 
+        // Trouve la tournée optimale dans le graphe `this.graph`
         public Tour ComputeOptimalTour()
         {
-            // Construire matrice initiale depuis le graphe
-            Matrix m = graph.ToCostMatrix();
+            List<string> vertices = graph.GetVertices();
+            int n = nbCities;
 
-            List<(string source, string destination)> includedSegments = new List<(string, string)>();
+            if (n == 0)
+                return new Tour();
 
-            BranchAndBound(m, includedSegments, 0);
-
-            return bestTour;
-        }
-
-        // ===================== ALGO PRINCIPAL =====================
-
-        private void BranchAndBound(Matrix m, List<(string source, string destination)> includedSegments, float currentCost)
-        {
-            // Copie de matrice pour éviter effets de bord
-            Matrix matrixCopy = m.Clone();
-
-            // Réduction
-            float reduction = ReduceMatrix(matrixCopy);
-            float newCost = currentCost + reduction;
-
-            // Coupure
-            if (newCost >= bestCost)
-                return;
-
-            // Si solution complète
-            if (includedSegments.Count == nbCities)
+            if (n == 1)
             {
-                Tour t = BuildTour(includedSegments, newCost);
-                if (t.Cost < bestCost)
-                {
-                    bestCost = t.Cost;
-                    bestTour = t;
-                }
-                return;
+                Tour trivialTour = new Tour();
+                return trivialTour;
             }
 
-            // Choisir arc
-            var (i, j, _) = GetMaxRegret(matrixCopy);
+            // On fixe la ville de départ à l'indice 0
+            int start = 0;
 
-            string source = graph.GetVertexName(i);
-            string destination = graph.GetVertexName(j);
+            // DP[(mask, j)] = coût minimal pour partir de start,
+            // visiter les sommets du masque, et terminer en j
+            Dictionary<(int mask, int last), float> dp = new Dictionary<(int, int), float>();
+            Dictionary<(int mask, int last), int> parent = new Dictionary<(int, int), int>();
 
-            // ================= INCLUSION =================
+            // Initialisation : start -> j
+            for (int j = 1; j < n; j++)
             {
-                Matrix includeMatrix = matrixCopy.Clone();
-                var includeSegments = new List<(string, string)>(includedSegments);
-                includeSegments.Add((source, destination));
+                int mask = 1 << (j - 1);
+                float cost = graph.GetCost(vertices[start], vertices[j]);
+                dp[(mask, j)] = cost;
+                parent[(mask, j)] = start;
+            }
 
-                // Supprimer ligne i
-                for (int col = 0; col < includeMatrix.NbColumns; col++)
-                    includeMatrix.SetValue(i, col, float.PositiveInfinity);
+            int fullMask = (1 << (n - 1)) - 1;
 
-                // Supprimer colonne j
-                for (int row = 0; row < includeMatrix.NbRows; row++)
-                    includeMatrix.SetValue(row, j, float.PositiveInfinity);
-
-                // Interdire trajet inverse
-                int jIndex = j;
-                int iIndex = i;
-                includeMatrix.SetValue(jIndex, iIndex, float.PositiveInfinity);
-
-                // Interdire sous-tournées
-                foreach (var v1 in graph.Vertices)
+            // Remplissage DP
+            for (int mask = 1; mask <= fullMask; mask++)
+            {
+                for (int j = 1; j < n; j++)
                 {
-                    foreach (var v2 in graph.Vertices)
-                    {
-                        if (v1 == v2) continue;
+                    // j doit appartenir au masque
+                    if ((mask & (1 << (j - 1))) == 0)
+                        continue;
 
-                        if (IsForbiddenSegment((v1, v2), includeSegments, nbCities))
+                    // Cas de base déjà initialisé
+                    if (mask == (1 << (j - 1)))
+                        continue;
+
+                    int prevMask = mask & ~(1 << (j - 1));
+                    float best = float.PositiveInfinity;
+                    int bestPrev = -1;
+
+                    for (int i = 1; i < n; i++)
+                    {
+                        if ((prevMask & (1 << (i - 1))) == 0)
+                            continue;
+
+                        if (!dp.ContainsKey((prevMask, i)))
+                            continue;
+
+                        float candidate = dp[(prevMask, i)] + graph.GetCost(vertices[i], vertices[j]);
+
+                        if (candidate < best)
                         {
-                            int r = graph.GetVertexIndex(v1);
-                            int c = graph.GetVertexIndex(v2);
-                            includeMatrix.SetValue(r, c, float.PositiveInfinity);
+                            best = candidate;
+                            bestPrev = i;
                         }
                     }
+
+                    if (bestPrev != -1)
+                    {
+                        dp[(mask, j)] = best;
+                        parent[(mask, j)] = bestPrev;
+                    }
                 }
-
-                BranchAndBound(includeMatrix, includeSegments, newCost);
             }
 
-            // ================= EXCLUSION =================
+            // Fermeture du cycle : last -> start
+            float optimalCost = float.PositiveInfinity;
+            int bestLast = -1;
+
+            for (int j = 1; j < n; j++)
             {
-                Matrix excludeMatrix = matrixCopy.Clone();
-                excludeMatrix.SetValue(i, j, float.PositiveInfinity);
+                if (!dp.ContainsKey((fullMask, j)))
+                    continue;
 
-                BranchAndBound(excludeMatrix, includedSegments, newCost);
+                float cycleCost = dp[(fullMask, j)] + graph.GetCost(vertices[j], vertices[start]);
+
+                if (cycleCost < optimalCost)
+                {
+                    optimalCost = cycleCost;
+                    bestLast = j;
+                }
             }
+
+            // Reconstruction du chemin
+            List<int> order = new List<int>();
+            order.Add(start);
+
+            List<int> reversePath = new List<int>();
+            int currentMask = fullMask;
+            int current = bestLast;
+
+            while (current != start)
+            {
+                reversePath.Add(current);
+
+                int prev = parent[(currentMask, current)];
+                if (current != start)
+                {
+                    currentMask = currentMask & ~(1 << (current - 1));
+                }
+                current = prev;
+            }
+
+            reversePath.Reverse();
+            order.AddRange(reversePath);
+            order.Add(start); // retour au départ pour fermer le cycle
+
+            // Construction de la tournée
+            Tour tour = new Tour();
+            for (int k = 0; k < order.Count - 1; k++)
+            {
+                string source = vertices[order[k]];
+                string destination = vertices[order[k + 1]];
+                float cost = graph.GetCost(source, destination);
+                tour.AddSegment(source, destination, cost);
+            }
+
+            this.bestCost = optimalCost;
+            this.bestTour = tour;
+
+            return tour;
         }
 
-        // ===================== CONSTRUCTION TOUR =====================
-
-        private Tour BuildTour(List<(string source, string destination)> segments, float cost)
-        {
-            Tour t = new Tour();
-
-            foreach (var s in segments)
-            {
-                t.AddSegment(s.source, s.destination, graph.GetCost(s.source, s.destination));
-            }
-
-            t.SetCost(cost);
-
-            return t;
-        }
-
-        // ===================== TES MÉTHODES =====================
-
+        // Réduit la matrice `m` et revoie la valeur totale de la réduction
+        // Après appel à cette méthode, la matrice `m` est *modifiée*.
         public static float ReduceMatrix(Matrix m)
         {
             float TotalReduction = 0;
@@ -181,6 +206,7 @@
             return TotalReduction;
         }
 
+        // Renvoie le regret de valeur maximale dans la matrice de coûts `m`
         public static (int i, int j, float value) GetMaxRegret(Matrix m)
         {
             int bestI = -1;
@@ -210,6 +236,7 @@
             return (bestI, bestJ, maxRegret);
         }
 
+        /* Renvoie vrai si le segment `segment` est un trajet parasite */
         public static bool IsForbiddenSegment((string source, string destination) segment, List<(string source, string destination)> includedSegments, int nbCities)
         {
             string currentCity = segment.destination;
@@ -242,9 +269,12 @@
 
             for (int j = 0; j < m.NbColumns; j++)
             {
-                if (j == coltoexclude) continue;
+                if (j == coltoexclude)
+                    continue;
+
                 float val = m.GetValue(row, j);
-                if (val < min) min = val;
+                if (val < min)
+                    min = val;
             }
 
             return min;
@@ -256,9 +286,12 @@
 
             for (int i = 0; i < m.NbRows; i++)
             {
-                if (i == rowToExclude) continue;
+                if (i == rowToExclude)
+                    continue;
+
                 float val = m.GetValue(i, col);
-                if (val < min) min = val;
+                if (val < min)
+                    min = val;
             }
 
             return min;
