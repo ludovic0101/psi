@@ -13,14 +13,14 @@
 </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TourneeFutee\TourneeFutee.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="..\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TourneeFutee.csproj" />
   </ItemGroup>
 </Project>

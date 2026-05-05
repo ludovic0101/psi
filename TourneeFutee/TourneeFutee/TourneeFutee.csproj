@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="TourneeFutee.Tests\**" />
+    <EmbeddedResource Remove="TourneeFutee.Tests\**" />
+    <None Remove="TourneeFutee.Tests\**" />
+  </ItemGroup>
+
 </Project>
